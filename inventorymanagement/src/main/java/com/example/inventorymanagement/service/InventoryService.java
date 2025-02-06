@@ -28,7 +28,7 @@ public class InventoryService {
     public List<TotalInventory> getAvailableProducts(String pincode) {
         return totalInventoryRepository.findAll().stream()
                 .filter(inv -> inv.getPincode().equals(pincode))
-                .toList();
+                .toList(); // some change
     }
 
     public void updateInventoryOnOrder(OrderRequestDto request) {
