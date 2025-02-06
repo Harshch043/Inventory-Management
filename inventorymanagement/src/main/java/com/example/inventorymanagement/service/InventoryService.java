@@ -17,13 +17,16 @@ import java.util.List;
 @RequiredArgsConstructor
 public class InventoryService {
 
-    @Autowired
+
     private final TotalInventoryRepository totalInventoryRepository;
-
-
-    @Autowired
     private final MerchantInventoryRepository merchantInventoryRepository;
 
+    @Autowired
+    public InventoryService(TotalInventoryRepository totalInventoryRepository,
+                            MerchantInventoryRepository merchantInventoryRepository) {
+        this.totalInventoryRepository = totalInventoryRepository;
+        this.merchantInventoryRepository = merchantInventoryRepository;
+    }
 
     public List<TotalInventory> getAvailableProducts(String pincode) {
         return totalInventoryRepository.findAll().stream()
@@ -52,14 +55,14 @@ public class InventoryService {
     }
 
     public void addMerchantProduct(MerchantProductRequestDto request) {
-        MerchantInventory merchantInventory = new MerchantInventory(null, request.getProductId(), request.getMerchantName(), request.getProductName(), request.getQuantity(), request.getPincode());
+        MerchantInventory merchantInventory = new MerchantInventory(request.getProductId(), request.getMerchantName(), request.getProductName(), request.getQuantity(), request.getPincode());
         merchantInventoryRepository.save(merchantInventory);
 
         TotalInventory totalInventory = totalInventoryRepository.findAll().stream()
                 .filter(inv -> inv.getProductId().equals(request.getProductId()) && inv.getPincode().equals(request.getPincode()))
                 .findFirst().orElse(null);
         if (totalInventory == null) {
-            totalInventory = new TotalInventory(null, request.getProductId(), request.getProductName(), request.getQuantity(), request.getPincode());
+            totalInventory = new TotalInventory(request.getProductId(), request.getProductName(), request.getQuantity(), request.getPincode());
         } else {
             totalInventory.setQuantity(totalInventory.getQuantity() + request.getQuantity());
         }

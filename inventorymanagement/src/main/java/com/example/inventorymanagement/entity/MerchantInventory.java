@@ -22,6 +22,12 @@ public class MerchantInventory {
     private int quantity;
     private String pincode;
 
-
+    public MerchantInventory(Long productId, String merchantName,String productName,int quantity, String pincode) {
+        this.productId = productId;
+        this.merchantName = merchantName;
+        this.pincode = pincode;
+        this.productName=productName;
+        this.quantity = quantity;
+    }
 
 }

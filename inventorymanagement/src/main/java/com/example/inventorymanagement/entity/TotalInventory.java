@@ -41,4 +41,11 @@ public class TotalInventory {
     public void setQuantity(int quantity) {
         this.quantity = quantity;
     }
+
+    public TotalInventory(Long productId, String productName, int quantity,String pincode) {
+        this.productId = productId;
+        this.productName = productName;
+        this.pincode = pincode;
+        this.quantity = quantity;
+    }
 }
