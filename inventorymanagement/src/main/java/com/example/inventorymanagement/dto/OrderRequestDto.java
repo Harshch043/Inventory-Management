@@ -10,4 +10,20 @@ public class OrderRequestDto {
     private String productName;
     private String pincode;
     private int quantity;
+
+    public Long getProductId() {
+        return productId;
+    }
+
+    public String getProductName() {
+        return productName;
+    }
+
+    public String getPincode() {
+        return pincode;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
 }

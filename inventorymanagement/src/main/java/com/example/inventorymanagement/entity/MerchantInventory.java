@@ -1,14 +1,15 @@
 package com.example.inventorymanagement.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Table(name = "merchant_inventory")
 public class MerchantInventory {
 
     @Id
@@ -20,7 +21,6 @@ public class MerchantInventory {
     private String productName;
     private int quantity;
     private String pincode;
-
 
 
 

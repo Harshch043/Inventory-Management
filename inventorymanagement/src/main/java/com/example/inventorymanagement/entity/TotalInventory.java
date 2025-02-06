@@ -1,15 +1,15 @@
 package com.example.inventorymanagement.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Table(name = "total_inventory")
 public class TotalInventory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,5 +22,23 @@ public class TotalInventory {
 
 
 
+    public Long getProductId() {
+        return productId;
+    }
 
+    public String getProductName() {
+        return productName;
+    }
+
+    public String getPincode() {
+        return pincode;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
 }
