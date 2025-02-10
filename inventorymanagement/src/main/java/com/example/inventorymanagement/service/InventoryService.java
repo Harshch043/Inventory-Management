@@ -46,37 +46,71 @@ public class InventoryService {
         List<Long> fulfilledMerchantIds = new ArrayList<>();
 
         for (InventoryList inventory : request.getOrderList()) {
-            MerchantInventory merchantInventory = merchantInventoryRepository.findAll().stream()
-                    .filter(inv -> inv.getProductId().equals(inventory.getProductId()) &&
-                            inv.getPincode().equals(inventory.getPincode()) &&
-                            inv.getMerchantId()==(inventory.getMerchantId()))
-                    .findFirst().orElse(null);
+            if (inventory.getOperation() == Operation.PLUS) {
+                // Merchant ID is provided -> Directly add inventory
+                MerchantInventory merchantInventory = merchantInventoryRepository.findByProductIdAndPincodeAndMerchantId(
+                        inventory.getProductId(), inventory.getPincode(), inventory.getMerchantId()
+                ).orElse(null);
 
-            if (merchantInventory != null) {
-                if (inventory.getOperation() == Operation.MINUS && merchantInventory.getQuantity() >= inventory.getQuantity()) {
-                    merchantInventory.setQuantity(merchantInventory.getQuantity() - inventory.getQuantity());
-                    merchantInventoryRepository.save(merchantInventory);
-                    fulfilledMerchantIds.add(merchantInventory.getMerchantId());
-                } else if (inventory.getOperation() == Operation.PLUS) {
+                if (merchantInventory == null) {
+                    // Create new inventory if merchant does not have this product
+                    merchantInventory = new MerchantInventory(
+                            null, inventory.getProductId(), inventory.getQuantity(), inventory.getPincode(), inventory.getMerchantId()
+                    );
+                } else {
+                    // Update existing inventory
                     merchantInventory.setQuantity(merchantInventory.getQuantity() + inventory.getQuantity());
-                    merchantInventoryRepository.save(merchantInventory);
-                    fulfilledMerchantIds.add(merchantInventory.getMerchantId());
+                }
+
+                merchantInventoryRepository.save(merchantInventory);
+                fulfilledMerchantIds.add(inventory.getMerchantId());
+
+            } else if (inventory.getOperation() == Operation.MINUS) {
+                // Merchant ID is NOT provided -> Find merchants who have stock
+                List<MerchantInventory> availableMerchants = merchantInventoryRepository.findByProductIdAndPincode(
+                        inventory.getProductId(), inventory.getPincode()
+                );
+
+                int remainingQuantity = inventory.getQuantity();
+
+                for (MerchantInventory merchantInventory : availableMerchants) {
+                    if (merchantInventory.getQuantity() >= remainingQuantity) {
+                        // This merchant can fully fulfill the order
+                        merchantInventory.setQuantity(merchantInventory.getQuantity() - remainingQuantity);
+                        merchantInventoryRepository.save(merchantInventory);
+                        fulfilledMerchantIds.add(merchantInventory.getMerchantId());
+                        break;  // Order fulfilled
+                    } else {
+                        // Partially fulfill from this merchant and continue to the next one
+                        remainingQuantity -= merchantInventory.getQuantity();
+                        merchantInventory.setQuantity(0);
+                        merchantInventoryRepository.save(merchantInventory);
+                        fulfilledMerchantIds.add(merchantInventory.getMerchantId());
+                    }
                 }
             }
         }
 
-        // Ensure the constructor is used correctly here
         return new OrderResponseDto(fulfilledMerchantIds);
     }
+
 
     public List<Long> addMerchantProducts(List<MerchantProductRequestDto> requestList) {
         List<Long> merchantIds = new ArrayList<>();
 
         for (MerchantProductRequestDto request : requestList) {
-            // Save in Merchant Inventory
-            MerchantInventory merchantInventory = new MerchantInventory(
-                    (Long) null, request.getProductId(), request.getQuantity(), request.getPincode(), request.getMerchantId()
-            );
+            // Check if the merchant already has this product in inventory
+            MerchantInventory merchantInventory = merchantInventoryRepository
+                    .findByProductIdAndPincodeAndMerchantId(request.getProductId(), request.getPincode(), request.getMerchantId())
+                    .orElse(null);
+
+            if (merchantInventory == null) {
+                // If merchant does not have this product, create a new entry
+                merchantInventory = new MerchantInventory(null, request.getProductId(), request.getQuantity(), request.getPincode(), request.getMerchantId());
+            } else {
+                // If merchant already has this product, update the quantity
+                merchantInventory.setQuantity(merchantInventory.getQuantity() + request.getQuantity());
+            }
             merchantInventoryRepository.save(merchantInventory);
             merchantIds.add(request.getMerchantId());
 
@@ -94,6 +128,7 @@ public class InventoryService {
         }
         return merchantIds;
     }
+
 
 
 
