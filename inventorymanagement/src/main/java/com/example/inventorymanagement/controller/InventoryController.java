@@ -8,40 +8,40 @@ import com.example.inventorymanagement.entity.TotalInventory;
 import com.example.inventorymanagement.service.InventoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/inventory")
-@RequiredArgsConstructor
+@RequestMapping("api/v1/inventory")
 public class InventoryController {
 
+    private final InventoryService inventoryService;
+
     @Autowired
-    private InventoryService inventoryService;
+    public InventoryController(InventoryService inventoryService) {
+        this.inventoryService = inventoryService;
+    }
+
 
 
     @GetMapping("/available")
-    public List<TotalInventory> getAvailableProducts(@RequestParam String pincode) {
-        return inventoryService.getAvailableProducts(pincode);
+    public List<TotalInventory> getAvailableProducts(@RequestParam String pincode, @RequestParam List<Long> productIds) {
+        return inventoryService.getAvailableProducts(pincode, productIds);
     }
 
-    @PostMapping("/order")
-    public OrderResponseDto placeOrder(@RequestBody OrderRequestDto request) {
-        inventoryService.updateInventoryOnOrder(request);
-        return new OrderResponseDto("Order placed successfully");
-    }
 
-    @PostMapping("/cancel")
-    public OrderResponseDto cancelOrder(@RequestBody OrderRequestDto request) {
-        inventoryService.cancelOrder(request);
-        return new OrderResponseDto("Order cancelled successfully");
+    @PostMapping("/update")
+    public OrderResponseDto updateInventory(@RequestBody OrderRequestDto request) {
+        return inventoryService.updateInventoryOnOrder(request);
     }
 
     @PostMapping("/merchant/add")
-    public OrderResponseDto addMerchantProduct(@RequestBody MerchantProductRequestDto request) {
-        inventoryService.addMerchantProduct(request);
-        return new OrderResponseDto("Product added successfully by merchant");
+    public ResponseEntity<OrderResponseDto> addMerchantProduct(@RequestBody List<MerchantProductRequestDto> requestList) {
+        List<Long> merchantIds = inventoryService.addMerchantProducts(requestList);
+        return ResponseEntity.ok(new OrderResponseDto(merchantIds));
     }
+
 
 }

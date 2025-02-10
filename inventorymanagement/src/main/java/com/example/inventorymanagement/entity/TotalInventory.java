@@ -16,22 +16,36 @@ public class TotalInventory {
     private Long id;
 
     private Long productId;
-    private String productName;
     private int quantity;
     private String pincode;
 
 
 
+    public TotalInventory(Long id, Long productId, int quantity, String pincode) {
+        this.id = id;
+        this.productId = productId;
+        this.quantity = quantity;
+        this.pincode = pincode;
+    }
+
+    public TotalInventory() {
+    }
+
+    // Getters and Setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public Long getProductId() {
         return productId;
     }
 
-    public String getProductName() {
-        return productName;
-    }
-
-    public String getPincode() {
-        return pincode;
+    public void setProductId(Long productId) {
+        this.productId = productId;
     }
 
     public int getQuantity() {
@@ -42,10 +56,11 @@ public class TotalInventory {
         this.quantity = quantity;
     }
 
-    public TotalInventory(Long productId, String productName, int quantity,String pincode) {
-        this.productId = productId;
-        this.productName = productName;
+    public String getPincode() {
+        return pincode;
+    }
+
+    public void setPincode(String pincode) {
         this.pincode = pincode;
-        this.quantity = quantity;
     }
 }

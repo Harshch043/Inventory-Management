@@ -9,18 +9,17 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class MerchantProductRequestDto {
     private Long productId;
-    private String merchantName;
-    private String productName;
     private int quantity;
     private String pincode;
+    private Long merchantId;
 
+    public Long getMerchantId(){
+        return merchantId;
+    }
     public Long getProductId() {
         return productId;
     }
 
-    public String getProductName() {
-        return productName;
-    }
 
     public String getPincode() {
         return pincode;
@@ -30,7 +29,4 @@ public class MerchantProductRequestDto {
         return quantity;
     }
 
-    public String getMerchantName() {
-        return merchantName;
-    }
 }

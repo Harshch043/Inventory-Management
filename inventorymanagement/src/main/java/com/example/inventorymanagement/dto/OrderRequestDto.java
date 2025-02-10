@@ -1,29 +1,47 @@
 package com.example.inventorymanagement.dto;
 
+import com.example.inventorymanagement.enums.Operation;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class OrderRequestDto {
-    private Long productId;
-    private String productName;
-    private String pincode;
-    private int quantity;
+    private List<InventoryList> orderList;
 
-    public Long getProductId() {
-        return productId;
+    public OrderRequestDto(List<InventoryList> orderList) {
+        this.orderList = orderList;
     }
 
-    public String getProductName() {
-        return productName;
+    // Getter and Setter
+    public List<InventoryList> getOrderList() {
+        return orderList;
     }
 
-    public String getPincode() {
-        return pincode;
+    public void setOrderList(List<InventoryList> orderList) {
+        this.orderList = orderList;
     }
 
-    public int getQuantity() {
-        return quantity;
-    }
 }
+
+
+
+
+/* input get from user to update inventory is in format like this
+{
+   {
+      productId: 5,
+      quantity: 10;
+      operation: PLUS;
+   }
+   {
+      productId: 3,
+      quantity: 8;
+      operation: PLUS;
+   }
+}
+ */
