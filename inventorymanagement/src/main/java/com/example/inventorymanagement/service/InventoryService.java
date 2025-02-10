@@ -9,6 +9,7 @@ import com.example.inventorymanagement.dto.OrderResponseDto;
 import com.example.inventorymanagement.entity.MerchantInventory;
 import com.example.inventorymanagement.entity.TotalInventory;
 import com.example.inventorymanagement.enums.Operation;
+import com.example.inventorymanagement.exception.InvalidRequestException;
 import com.example.inventorymanagement.repository.MerchantInventoryRepository;
 import com.example.inventorymanagement.repository.TotalInventoryRepository;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,10 @@ public class InventoryService {
     }
 
     public List<TotalInventory> getAvailableProducts(String pincode, List<Long> productIds) {
+        if (pincode == null || pincode.isEmpty() || productIds == null || productIds.isEmpty()) {
+            throw new InvalidRequestException("Invalid pincode or product list cannot be empty.");
+        }
+
         return totalInventoryRepository.findAll().stream()
                 .filter(inv -> inv.getPincode().equals(pincode) && productIds.contains(inv.getProductId()))
                 .collect(Collectors.toList());
@@ -43,9 +48,13 @@ public class InventoryService {
 
 
     public OrderResponseDto updateInventoryOnOrder(OrderRequestDto request) {
+        if (request == null || request.getOrderList().isEmpty()) {
+            throw new InvalidRequestException("Order request cannot be null or empty.");
+        }
         List<Long> fulfilledMerchantIds = new ArrayList<>();
 
         for (InventoryList inventory : request.getOrderList()) {
+            validateInventoryRequest(inventory);
             if (inventory.getOperation() == Operation.PLUS) {
                 // Merchant ID is provided -> Directly add inventory
                 MerchantInventory merchantInventory = merchantInventoryRepository.findByProductIdAndPincodeAndMerchantId(
@@ -96,10 +105,14 @@ public class InventoryService {
 
 
     public List<Long> addMerchantProducts(List<MerchantProductRequestDto> requestList) {
+        if (requestList == null || requestList.isEmpty()) {
+            throw new InvalidRequestException("Product request list cannot be empty.");
+        }
         List<Long> merchantIds = new ArrayList<>();
 
         for (MerchantProductRequestDto request : requestList) {
             // Check if the merchant already has this product in inventory
+            validateMerchantProductRequest(request);
             MerchantInventory merchantInventory = merchantInventoryRepository
                     .findByProductIdAndPincodeAndMerchantId(request.getProductId(), request.getPincode(), request.getMerchantId())
                     .orElse(null);
@@ -127,6 +140,42 @@ public class InventoryService {
             totalInventoryRepository.save(totalInventory);
         }
         return merchantIds;
+    }
+
+    private void validateInventoryRequest(InventoryList inventory) {
+        if (inventory == null) {
+            throw new InvalidRequestException("Inventory request cannot be null.");
+        }
+        if (inventory.getProductId() == null || inventory.getProductId() <= 0) {
+            throw new InvalidRequestException("Invalid Product ID.");
+        }
+        if (inventory.getPincode() == null || inventory.getPincode().isEmpty()) {
+            throw new InvalidRequestException("Pincode cannot be empty.");
+        }
+        if (inventory.getQuantity() <= 0) {
+            throw new InvalidRequestException("Quantity must be greater than zero.");
+        }
+        if (inventory.getOperation() == Operation.PLUS && (inventory.getMerchantId() == null || inventory.getMerchantId() <= 0)) {
+            throw new InvalidRequestException("Merchant ID is required for adding inventory.");
+        }
+    }
+
+    private void validateMerchantProductRequest(MerchantProductRequestDto request) {
+        if (request == null) {
+            throw new InvalidRequestException("Product request cannot be null.");
+        }
+        if (request.getProductId() == null || request.getProductId() <= 0) {
+            throw new InvalidRequestException("Invalid Product ID.");
+        }
+        if (request.getPincode() == null || request.getPincode().isEmpty()) {
+            throw new InvalidRequestException("Pincode cannot be empty.");
+        }
+        if (request.getQuantity() <= 0) {
+            throw new InvalidRequestException("Quantity must be greater than zero.");
+        }
+        if (request.getMerchantId() == null || request.getMerchantId() <= 0) {
+            throw new InvalidRequestException("Merchant ID is required.");
+        }
     }
 
 
